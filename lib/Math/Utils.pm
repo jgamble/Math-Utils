@@ -11,14 +11,12 @@ our %EXPORT_TAGS = (
 	fortran => [ qw(log10 copysign) ],
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	utility => [ qw(sign) ],
-	polynomial => [ qw(horner addcf subcf divcf) ],
 );
 
 our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{fortran} },
 	@{ $EXPORT_TAGS{compare} },
 	@{ $EXPORT_TAGS{utility} },
-	@{ $EXPORT_TAGS{polynomial} },
 );
 
 our $VERSION = '0.01';
@@ -79,54 +77,104 @@ or
 
 =head1 EXPORT
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+All functions can be exported by name, or by using a tag that they're
+grouped under.
 
 =cut
 
+=head2 utility tag
 
-#
-# @slist = sign(@values);
-# $s = sign($x);
-#
+=head3 sign()
+
+  $s = sign($x);
+  @slist = sign(@values);
+
+Returns -1 if the argument is negative, 0 if the argument is zero, and 1
+if the argument is positive.
+
+In list form applies the same operation to each member of the list.
+
+=cut
+
 sub sign
 {
 	return wantarray? map(($_ < 0)? -1: (($_ > 0)? 1: 0), @_):
 		($_[0] < 0)? -1: (($_[0] > 0)? 1: 0);
 }
 
-#
-# $s = copysign($x);
-# $ms = copysign($m, $n);
-#
+=head2 fortran tag
+
+These are functions that originated in FORTRAN, and were implented
+in Perl in the module Math::Fortran, by J. A. R. Williams.
+
+They are here with a name change -- copysign() was known as sign()
+in Math::Fortran.
+
+=head3 copysign()
+
+  $ms = copysign($m, $n);
+  $s = copysign($x);
+ 
+Take the sign of the second argument and apply it to the first.
+
+If there is only one argument, return -1 if the argument is negative,
+otherwise return 1.
+
+=cut
+
 sub copysign
 {
 	return ($_[1] < 0)? -abs($_[0]): abs($_[0]) if (@_ == 2);
 	return ($_[0] < 0)? -1: 1;
 }
 
-#
-# $xlog10 = log10($x);
-# @xlog10 = log10(@x);
-#
+=head3 log10()
+
+  $xlog10 = log10($x);
+  @xlog10 = log10(@x);
+
+Return the log base ten of the argument. A list form of the function
+is also provided.
+
+=cut
+
 sub log10
 {
 	my $log10 = log(10);
 	return wantarray? map(log($_)/$log10, @_): log($_[0])/$log10;
 }
 
-#
-# Create a comparison function for floating point (non-integer) numbers.
-#
-# Since exact comparisons of floating point numbers tend to be iffy,
-# the functions returns a comparison function using a tolerance chose
-# by the programmer. The programmer may then use that function from
-# then on confident that comparisons will be consistent.
-#
-# If the programmer does not pass in a tolerance, the comparison function
-# returned will have a default tolerance of 1.49-e8, which is roughly
-# the square root of the machine epsilon on Intel's Pentium chips.
-#
+=head2 compare tag
+
+Create a comparison function for floating point (non-integer) numbers.
+
+Since exact comparisons of floating point numbers tend to be iffy,
+the functions returns a comparison function using a tolerance chose
+by the programmer. The programmer may then use that function from
+then on confident that comparisons will be consistent.
+
+If the programmer does not pass in a tolerance, the comparison function
+returned will have a default tolerance of 1.49-e8, which is roughly
+the square root of the machine epsilon on Intel's Pentium chips.
+
+=head3 generate_fltcmp()
+
+Returns a comparison function that will compare values using a tolerance
+that you supply. The generated function will return -1 if the first
+argument compares as less than the second, 0 if the two arguments
+compare as equal, and 1 if the first argument compares as greater than
+the second.
+
+  my $fltcmp = generate_fltcmp(1.5e-7);
+
+  my(@xpos) = map {&$fltcmp($_, 0) == 1} @xvals;
+
+If you do not provide a tolerance, a default tolerance of 1.49e-8
+(approximately the square root of an Intel Pentium's
+L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon/>) will be used.
+
+=cut
+
 sub generate_fltcmp
 {
 	my $tol = $_[0] // 1.49e-8;
@@ -138,6 +186,28 @@ sub generate_fltcmp
 		return 0;
 	}
 }
+
+=head3 generate_relational()
+
+Returns a list of comparison functions that will compare values using a
+tolerance that you supply. The generated functions will be the equivalent
+of the equal, not equal, greater than, greater that or equal, less than,
+and less than or equal operators.
+
+
+  my($eq, $ne, $gt, $ge, $lt, $le) = generate_relational(1.5e-7);
+
+  my(@approx_5) = map {&$eq($_, 5)} @xvals;
+
+Of course, if you were only interested in not equal, you could use:
+
+  my(undef, $ne) = generate_relational(1.5e-7);
+
+  my(@not_around5) = map {&$ne($_, 5)} @xvals;
+
+Internally, the functions all created using generate_fltcmp().
+
+=cut
 
 sub generate_relational
 {
@@ -156,171 +226,6 @@ sub generate_relational
 		sub {return &$fltcmp(@_) <= 0;},	# le
 	);
 }
-
-#
-# $mdn = dotp(\@m, \@n);
-#
-sub dotp
-{
-	my(@av) = @{$_[0]};
-	my(@bv) = @{$_[1]};
-	my $len = scalar @av;
-	my $d = 0;
-
-	if (scalar @bv == $len)
-	{
-		$d += $av[$_] * $bv[$_] for (0 .. $len);
-	}
-	return $d;
-}
-
-#
-# @results = horner(\@coefficients, \@xvalues);
-# $result = horner(\@coefficients, $xvalue);
-#
-# Returns a list of y-points on the polynomial for a corresponding
-# list of x-points, using Horner's method.
-#
-sub horner
-{
-	my @coefficients = @{$_[0]};
-	my $xval_ref = $_[1];
-
-	my @values;
-
-	#
-	# It could happen. Someone might type \$x instead of $x.
-	#
-	@values = (ref $xval_ref eq "ARRAY")? @$xval_ref:
-		(((ref $xval_ref eq "SCALAR")? $$xval_ref: $xval_ref));
-
-	#
-	# Move the leading coefficient off the polynomial list
-	# and use it as our starting value(s).
-	#
-	my @results = (pop @coefficients) x scalar @values;
-
-	foreach my $c (reverse @coefficients)
-	{
-		foreach my $j (0..$#values)
-		{
-			$results[$j] = $results[$j] * $values[$j] + $c;
-		}
-	}
-
-	return wantarray? @results: $results[0];
-}
-
-#
-# @p = addcf(\@m, \@n);
-#
-# Add two lists of numbers as though they were polynomial coefficients.
-# The coefficient lists are presumed to go from low order to high, e.g.:
-#     1 + 2x + 4x**2 + 8x**3
-# becomes
-#     (1, 2, 4, 8);
-#
-sub addcf
-{
-	my(@av) = @{$_[0]};
-	my(@bv) = @{$_[1]};
-	my $ldiff = scalar @av - scalar @bv;
-
-	my @result = ($ldiff < 0)? splice(@bv, scalar @bv + $ldiff, -$ldiff): splice(@av, scalar @av - $ldiff, $ldiff);
-	unshift @result, map($av[$_]+$bv[$_], 0..scalar @av);
-
-	return \@result;
-}
-
-#
-# @p = subcf(\@m, \@n);
-# 
-# The coefficient lists are presumed to go from low order to high, e.g.:
-#     1 + 2x + 4x**2 + 8x**3
-# becomes
-#     (1, 2, 4, 8);
-#
-sub subcf
-{
-	my(@av) = @{$_[0]};
-	my(@bv) = @{$_[1]};
-	my $ldiff = scalar @av - scalar @bv;
-
-	my @result = ($ldiff < 0)? splice(@bv, scalar @bv + $ldiff, -$ldiff): splice(@av, scalar @av - $ldiff, $ldiff);
-	unshift @result, map($av[$_]-$bv[$_], 0..scalar @av);
-
-	return \@result;
-}
-
-#
-# ($q_ref, $r_ref) = divcf(\@coefficients1, \@coefficients2);
-#
-# Synthetic division for polynomials. Returns references to the quotient
-# and the remainder.
-#
-# Polynomial coefficients are from low degree to high, e.g.:
-#  ax^3 + bx^2 + cx + d
-# are listed
-#  @coefficients1 = (d, c, b, a);
-#
-sub divcf
-{
-	my @numerator = @{$_[0]};
-	my @divisor = @{$_[1]};
-
-	my @quotient;
-
-	#
-	# Just checking... removing any leading zeros.
-	#
-	pop @numerator while (@numerator);
-	pop @divisor while (@divisor);
-
-	my $n_degree = $#numerator;
-	my $d_degree = $#divisor;
-	my $q_degree = $n_degree - $d_degree;
-
-	return ([0], \@numerator) if ($q_degree < 0);
-	return (undef, undef) if ($d_degree < 0);
-
-	#
-	### poly_divide():
-	#### @numerator
-	#### by
-	#### @divisor
-	#
-	my $lead_coefficient = $divisor[0];
-
-	#
-	# Perform the synthetic division. The remainder will
-	# be what's left in the numerator.
-	#
-	for my $j (reverse 0..$q_degree)
-	{
-		#
-		# Get the next term for the quotient. We shift
-		# off the lead numerator term, which would become
-		# zero due to subtraction anyway.
-		#
-		my $q = (pop @numerator)/$lead_coefficient;
-
-		push @quotient, $q;
-
-		for my $k (1..$d_degree)
-		{
-			$numerator[$k - 1] -= $q * $divisor[$k];
-		}
-	}
-
-	#
-	# And once again, check for leading zeros in the remainder.
-	#
-	pop @numerator while (@numerator);
-	push @numerator, 0 unless (@numerator);
-
-	return (\@quotient, \@numerator);
-}
-
 
 =head1 AUTHOR
 
