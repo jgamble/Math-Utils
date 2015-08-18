@@ -7,5 +7,10 @@ README
 t/00-load.t
 t/01-log10.t
 t/02-copysign.t
+t/03-sign.t
+t/04-compare.t
 t/manifest.t
 t/pod.t
+LICENSE
+META.yml
+META.json

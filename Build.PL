@@ -30,7 +30,7 @@ my $build = Module::Build->new(
 
 	meta_merge => {
 		keywords => [ qw(math math-utils
-				sign logarithm ) ],
+				sign logarithm comparison) ],
 		resources => {
 			repository => 'git://github.com/jgamble/Math-Utils.git',
 		},
