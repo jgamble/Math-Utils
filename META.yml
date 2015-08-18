@@ -1,0 +1,31 @@
+---
+abstract: 'Functions useful in Mathematics but not in Perl'
+author:
+  - 'John M. Gamble <jgamble@cpan.org>'
+build_requires:
+  Test::Simple: '0'
+configure_requires:
+  Module::Build: '0.4'
+dynamic_config: 0
+generated_by: 'Module::Build version 0.4203, CPAN::Meta::Converter version 2.133380'
+keywords:
+  - math
+  - math-utils
+  - sign
+  - logarithm
+  - comparison
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: Math-Utils
+provides:
+  Math::Utils:
+    file: lib/Math/Utils.pm
+    version: '0.01'
+requires:
+  perl: v5.8.3
+resources:
+  license: http://dev.perl.org/licenses/
+  repository: git://github.com/jgamble/Math-Utils.git
+version: '0.01'
