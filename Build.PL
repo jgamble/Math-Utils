@@ -5,9 +5,9 @@ use warnings;
 my $build = Module::Build->new(
 	module_name => 'Math::Utils',
 
-	dist_abstract => 'Functions useful in Mathematics but not in Perl',
+	dist_abstract => 'Useful mathematical functions not in Perl',
 	dist_author => ['John M. Gamble <jgamble@cpan.org>'],
-	dist_version => '0.01',
+	dist_version => '0.02',
 	dist_name => 'Math-Utils',
 
 	requires => {
