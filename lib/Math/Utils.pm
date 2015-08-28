@@ -11,7 +11,7 @@ our %EXPORT_TAGS = (
 	fortran => [ qw(log10 copysign) ],
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	utility => [ qw(sign) ],
-	polynomial => [ qw(horner pl_add pl_sub pl_div) ],
+	polynomial => [ qw(horner pl_add pl_sub pl_div pl_mult) ],
 );
 
 our @EXPORT_OK = (
@@ -21,7 +21,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -66,7 +66,8 @@ or
     # Here we are only interested in the greater than and less than
     # comparison functions.
     #
-    my(undef, undef, $apx_gt, undef, $apx_lt) = generate_relational(1.5e-5);
+    my(undef, undef,
+        $approx_gt, undef, $approx_lt) = generate_relational(1.5e-5);
 
 or
 
@@ -76,6 +77,19 @@ or
 
     @ternaries = sign(@coefficients);
 
+or
+
+    use Math::Utils qw(:polynomial);    # Basic ops.
+
+    #
+    # Coefficient lists run from 0th degree upward, left to right.
+    #
+    my @c1 = (1, 3, 5, 7, 11, 13, 17, 19);
+    my @c2 = (1, 3, 1, 7);
+    my @c3 = (1, -1, 1)
+
+    my $c_ref = pl_mult(\@c1, \@c2);
+    my $c_ref = pl_add($c_ref, \@c3);
 
 =head1 EXPORT
 
@@ -107,7 +121,7 @@ sub sign
 =head2 fortran tag
 
 These are functions that originated in FORTRAN, and were implented
-in Perl in the module Math::Fortran, by J. A. R. Williams.
+in Perl in the module L<Math::Fortran>, by J. A. R. Williams.
 
 They are here with a name change -- copysign() was known as sign()
 in Math::Fortran.
@@ -117,10 +131,17 @@ in Math::Fortran.
   $ms = copysign($m, $n);
   $s = copysign($x);
  
-Take the sign of the second argument and apply it to the first.
+Take the sign of the second argument and apply it to the first. Zero
+is considered part of the positive signs.
+
+  copysign(-5, 0);  # Returns 5.
+  copysign(-5, 7);  # Returns 5.
+  copysign(-5, -7);  # Returns -5.
+  copysign(5, -7);  # Returns -5.
 
 If there is only one argument, return -1 if the argument is negative,
-otherwise return 1.
+otherwise return 1. For example, copysign(1, -4) and copysign(-4) both
+return -1.
 
 =cut
 
@@ -148,16 +169,16 @@ sub log10
 
 =head2 compare tag
 
-Create a comparison function for floating point (non-integer) numbers.
+Create comparison functions for floating point (non-integer) numbers.
 
 Since exact comparisons of floating point numbers tend to be iffy,
-the functions returns a comparison function using a tolerance chose
-by the programmer. The programmer may then use that function from
-then on confident that comparisons will be consistent.
+the comparison functions use a tolerance chosen by you. You may
+then use those functions from then on confident that comparisons
+will be consistent.
 
-If the programmer does not pass in a tolerance, the comparison function
-returned will have a default tolerance of 1.49-e8, which is roughly
-the square root of the machine epsilon on Intel's Pentium chips.
+If you do not provide a tolerance, a default tolerance of 1.49e-8
+(approximately the square root of an Intel Pentium's
+L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon/>) will be used.
 
 =head3 generate_fltcmp()
 
@@ -169,11 +190,7 @@ the second.
 
   my $fltcmp = generate_fltcmp(1.5e-7);
 
-  my(@xpos) = map {&$fltcmp($_, 0) == 1} @xvals;
-
-If you do not provide a tolerance, a default tolerance of 1.49e-8
-(approximately the square root of an Intel Pentium's
-L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon/>) will be used.
+  my(@xpos) = grep {&$fltcmp($_, 0) == 1} @xvals;
 
 =cut
 
@@ -199,13 +216,13 @@ and less than or equal operators.
 
   my($eq, $ne, $gt, $ge, $lt, $le) = generate_relational(1.5e-7);
 
-  my(@approx_5) = map {&$eq($_, 5)} @xvals;
+  my(@approx_5) = grep {&$eq($_, 5)} @xvals;
 
 Of course, if you were only interested in not equal, you could use:
 
   my(undef, $ne) = generate_relational(1.5e-7);
 
-  my(@not_around5) = map {&$ne($_, 5)} @xvals;
+  my(@not_around5) = grep {&$ne($_, 5)} @xvals;
 
 Internally, the functions all created using generate_fltcmp().
 
@@ -213,8 +230,7 @@ Internally, the functions all created using generate_fltcmp().
 
 sub generate_relational
 {
-	my $tol = $_[0] // 1.49e-8;
-	my $fltcmp = generate_fltcmp($tol);
+	my $fltcmp = generate_fltcmp($_[0]);
 
 	#
 	# In order: eq, ne, gt, ge, lt, le.
@@ -242,11 +258,15 @@ becomes
 
     (1, 2, 4, 8)
 
-In all functions the coeffcient list is passed by reference to the function.
+In all functions the coeffcient list is passed by reference to the function,
+and the return values are all references to a coefficient list.
 
 It is assumed that any leading zeros in the coefficient lists have
 already been removed before calling these functions, and that any leading
 zeros found in the returned lists will be handled by the caller.
+
+Although these functions are convenient for simple polynomial operations,
+for more advanced polynonial operations L<Math::Polynomial> is recommended.
 
 =head3 horner()
 
@@ -313,7 +333,6 @@ sub pl_add
 }
 
 =head3 pl_sub()
-
 
     $polyn_ref = pl_sub(\@m, \@n);
     
@@ -391,6 +410,43 @@ sub pl_div
 	return (\@quotient, \@numerator);
 }
 
+=head3 pl_mult()
+
+    $m_ref = pl_mult(\@coefficients1, \@coefficients2);
+
+Returns the reference to the product of the two multiplicands.
+
+=cut
+
+sub pl_mult
+{
+	my($av, $bv) = @_;
+	my $a_degree = $#{$av};
+	my $b_degree = $#{$bv};
+
+	#
+	# Rather than multiplying left to right for each element,
+	# sum to each degree of the resulting polynomial (the list
+	# after the map block). Still an O(n**2) operation, but
+	# we don't need separate storage variables.
+	#
+	return [
+	map {
+		my $a_idx = ($a_degree > $_)? $_: $a_degree;
+		my $b_from = $_ - $a_idx;
+		my $b_to = ($b_degree > $_)? $_: $b_degree;
+
+		my $c = $av->[$a_idx] * $bv->[$b_from];
+
+		for my $b_idx ($b_from+1 .. $b_to)
+		{
+			$c += $av->[--$a_idx] * $bv->[$b_idx];
+		}
+		$c;
+	} (0 .. $a_degree + $b_degree)
+	];
+}
+
 =head3 pl_derivative()
 
     $poly_ref = pl_derivative(\@coefficients)
@@ -399,9 +455,9 @@ Returns the derivative of a polynomial.
 
 =cut
 
-sub poly_derivative
+sub pl_derivative
 {
-	my @coefficients = @_;
+	my @coefficients = @{$_[0]};
 	my $degree = $#coefficients;
 
 	return [] if ($degree <= 1);
@@ -442,6 +498,16 @@ sub pl_antiderivative
 =head1 AUTHOR
 
 John M. Gamble, C<< <jgamble at cpan.org> >>
+
+=head1 SEE ALSO
+
+Among other functions, L<List::Util> has the mathematically useful functions
+max(), min(), product(), sum(), and sum0().
+
+L<List::MoreUtils> has the function minmax().
+
+L<Math::Polynomial> for a complete set of polynomial operations, with the
+added convenience that objects bring.
 
 =head1 BUGS
 
