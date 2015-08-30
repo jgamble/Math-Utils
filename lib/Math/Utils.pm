@@ -1,6 +1,6 @@
 package Math::Utils;
 
-use 5.008003;
+use 5.010001;
 use strict;
 use warnings;
 
@@ -19,7 +19,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{utility} },
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -64,7 +64,8 @@ or
     # Here we are only interested in the greater than and less than
     # comparison functions.
     #
-    my(undef, undef, $apx_gt, undef, $apx_lt) = generate_relational(1.5e-5);
+    my(undef, undef,
+        $apx_gt, undef, $apx_lt) = generate_relational(1.5e-5);
 
 or
 
@@ -105,7 +106,7 @@ sub sign
 =head2 fortran tag
 
 These are functions that originated in FORTRAN, and were implented
-in Perl in the module Math::Fortran, by J. A. R. Williams.
+in Perl in the module L<Math::Fortran>, by J. A. R. Williams.
 
 They are here with a name change -- copysign() was known as sign()
 in Math::Fortran.
@@ -115,10 +116,17 @@ in Math::Fortran.
   $ms = copysign($m, $n);
   $s = copysign($x);
  
-Take the sign of the second argument and apply it to the first.
+Take the sign of the second argument and apply it to the first. Zero
+is considered part of the positive signs.
+
+    copysign(-5, 0);  # Returns 5.
+    copysign(-5, 7);  # Returns 5.
+    copysign(-5, -7);  # Returns -5.
+    copysign(5, -7);  # Returns -5.
 
 If there is only one argument, return -1 if the argument is negative,
-otherwise return 1.
+otherwise return 1. For example, copysign(1, -4) and copysign(-4) both
+return -1.
 
 =cut
 
@@ -146,16 +154,17 @@ sub log10
 
 =head2 compare tag
 
-Create a comparison function for floating point (non-integer) numbers.
+Create comparison functions for floating point (non-integer) numbers.
 
 Since exact comparisons of floating point numbers tend to be iffy,
-the functions returns a comparison function using a tolerance chose
-by the programmer. The programmer may then use that function from
-then on confident that comparisons will be consistent.
+the comparison functions use a tolerance chosen by you. You may then
+use the functions from then on confident that comparisons will be
+consistent.
 
-If the programmer does not pass in a tolerance, the comparison function
-returned will have a default tolerance of 1.49-e8, which is roughly
-the square root of the machine epsilon on Intel's Pentium chips.
+If you do not pass in a tolerance, a default tolerance of 1.49-e8
+(approximately the square root of an Intel Pentium's
+L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon/>)
+will be used.
 
 =head3 generate_fltcmp()
 
@@ -167,11 +176,7 @@ the second.
 
   my $fltcmp = generate_fltcmp(1.5e-7);
 
-  my(@xpos) = map {&$fltcmp($_, 0) == 1} @xvals;
-
-If you do not provide a tolerance, a default tolerance of 1.49e-8
-(approximately the square root of an Intel Pentium's
-L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon/>) will be used.
+  my(@xpos) = grep {&$fltcmp($_, 0) == 1} @xvals;
 
 =cut
 
@@ -203,7 +208,7 @@ Of course, if you were only interested in not equal, you could use:
 
   my(undef, $ne) = generate_relational(1.5e-7);
 
-  my(@not_around5) = map {&$ne($_, 5)} @xvals;
+  my(@not_around5) = grep {&$ne($_, 5)} @xvals;
 
 Internally, the functions all created using generate_fltcmp().
 
@@ -211,8 +216,7 @@ Internally, the functions all created using generate_fltcmp().
 
 sub generate_relational
 {
-	my $tol = $_[0] // 1.49e-8;
-	my $fltcmp = generate_fltcmp($tol);
+	my $fltcmp = generate_fltcmp($_[0]);
 
 	#
 	# In order: eq, ne, gt, ge, lt, le.
@@ -273,43 +277,7 @@ L<http://search.cpan.org/dist/Math-Utils/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2013 by John M. Gamble
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of the the Artistic License (2.0). You may obtain a
-copy of the full license at:
-
-L<http://www.perlfoundation.org/artistic_license_2_0>
-
-Any use, modification, and distribution of the Standard or Modified
-Versions is governed by this Artistic License. By using, modifying or
-distributing the Package, you accept this license. Do not use, modify,
-or distribute the Package, if you do not accept this license.
-
-If your Modified Version has been derived from a Modified Version made
-by someone other than you, you are nevertheless required to ensure that
-your Modified Version complies with the requirements of this license.
-
-This license does not grant you the right to use any trademark, service
-mark, tradename, or logo of the Copyright Holder.
-
-This license includes the non-exclusive, worldwide, free-of-charge
-patent license to make, have made, use, offer to sell, sell, import and
-otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
-
-Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
-AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
-CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Copyright 2015 by John M. Gamble
 
 
 =cut
