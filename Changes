@@ -1,5 +1,13 @@
 Revision history for Math-Utils
 
+0.02
+	30 Aug 2015
+	- CPAN testers caught a 5.10ism in the module, which is
+	  listed as okay for version 5.8. Decided to bump the
+	  minimum version requirement to 5.10.1.
+	- Documentation was sketchy, so added more descriptive
+	  text and examples.
+	- Version bump; up to CPAN.
 0.01
      18 Aug 2015
 	- Collection of utility functions for Math modules, starting

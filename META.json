@@ -1,5 +1,5 @@
 {
-   "abstract" : "Functions useful in Mathematics but not in Perl",
+   "abstract" : "Useful mathematical functions not in Perl",
    "author" : [
       "John M. Gamble <jgamble@cpan.org>"
    ],
@@ -33,14 +33,14 @@
       },
       "runtime" : {
          "requires" : {
-            "perl" : "v5.8.3"
+            "perl" : "v5.10.1"
          }
       }
    },
    "provides" : {
       "Math::Utils" : {
          "file" : "lib/Math/Utils.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       }
    },
    "release_status" : "stable",
@@ -52,5 +52,5 @@
          "url" : "git://github.com/jgamble/Math-Utils.git"
       }
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }
