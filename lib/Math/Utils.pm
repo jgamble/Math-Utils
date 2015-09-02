@@ -11,7 +11,7 @@ our %EXPORT_TAGS = (
 	fortran => [ qw(log10 copysign) ],
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	utility => [ qw(sign) ],
-	polynomial => [ qw(horner pl_add pl_sub pl_div pl_mult) ],
+	polynomial => [ qw(horner pl_add pl_sub pl_div pl_mult pl_derivative pl_antiderivative) ],
 );
 
 our @EXPORT_OK = (
@@ -21,7 +21,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.04';
 
 =head1 NAME
 
@@ -172,14 +172,13 @@ sub log10
 Create comparison functions for floating point (non-integer) numbers.
 
 Since exact comparisons of floating point numbers tend to be iffy,
-
 the comparison functions use a tolerance chosen by you. You may
 then use those functions from then on confident that comparisons
 will be consistent.
 
 If you do not provide a tolerance, a default tolerance of 1.49e-8
 (approximately the square root of an Intel Pentium's
-L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon/>)
+L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon>)
 will be used.
 
 =head3 generate_fltcmp()
@@ -329,7 +328,7 @@ sub pl_add
 		splice(@bv, scalar @bv + $ldiff, -$ldiff):
 		splice(@av, scalar @av - $ldiff, $ldiff);
 
-	unshift @result, map($av[$_]+$bv[$_], 0..scalar @av);
+	unshift @result, map($av[$_] + $bv[$_], 0..scalar @av);
 
 	return \@result;
 }
@@ -352,19 +351,31 @@ sub pl_sub
 		splice(@bv, scalar @bv + $ldiff, -$ldiff):
 		splice(@av, scalar @av - $ldiff, $ldiff);
 
-	unshift @result, map($av[$_]-$bv[$_], 0..scalar @av);
+	unshift @result, map($av[$_] - $bv[$_], 0..scalar @av);
 
 	return \@result;
 }
 
 =head3 pl_div()
 
-    ($q_ref, $r_ref) = pl_div(\@coefficients1, \@coefficients2);
+    ($q_ref, $r_ref) = pl_div(\@numerator, \@divisor);
 
 Synthetic division for polynomials. Divides the first list of coefficients
 by the second list.
 
 Returns references to the quotient and the remainder.
+
+Remember to check for leading zeros (which are rightmost in the list) in
+the returned values. For example,
+
+    my @m1 = (4, 12, 9, 3);
+    my @m2 = (1, 3, 3, 1);
+
+    my($q_ref, $r_ref) = pl_div(\@n, \@d);
+
+After division you will have returned
+
+    (3) as the quotient, and (1, 3, 0) as the remainder.
 
 =cut
 
@@ -377,37 +388,38 @@ sub pl_div
 
 	my $n_degree = $#numerator;
 	my $d_degree = $#divisor;
-	my $q_degree = $n_degree - $d_degree;
 
 	#
-	# Sanity check if either set of coefficients
-	# are empty lists.
+	# Sanity checks: a numerator less than the divisor
+	# is automatically the remainder; and return a pair
+	# of undefs if either set of coefficients are
+	# empty lists.
 	#
-	return ([0], \@numerator) if ($q_degree < 0);
-	return (undef, undef) if ($d_degree < 0);
+	return ([0], \@numerator) if ($n_degree < $d_degree);
+	return (undef, undef) if ($d_degree < 0 or $n_degree < 0);
 
-	my $lead_coefficient = $divisor[0];
+	my $lead_coefficient = $divisor[$#divisor];
 
 	#
 	# Perform the synthetic division. The remainder will
 	# be what's left in the numerator.
+	# (4, 13, 4, -9, 6) / (1, 2) = (4, 5, -6, 3)
 	#
-	for my $j (reverse 0..$q_degree)
-	{
+	@quotient = reverse map {
 		#
-		# Get the next term for the quotient. We shift
+		# Get the next term for the quotient. We pop
 		# off the lead numerator term, which would become
 		# zero due to subtraction anyway.
 		#
 		my $q = (pop @numerator)/$lead_coefficient;
 
-		push @quotient, $q;
-
-		for my $k (1..$d_degree)
+		for my $k (0..$d_degree - 1)
 		{
-			$numerator[$k - 1] -= $q * $divisor[$k];
+			$numerator[$#numerator - $k] -= $q * $divisor[$d_degree - $k - 1];
 		}
-	}
+
+		$q;
+	} reverse (0 .. $n_degree - $d_degree);
 
 	return (\@quotient, \@numerator);
 }
@@ -432,8 +444,7 @@ sub pl_mult
 	# after the map block). Still an O(n**2) operation, but
 	# we don't need separate storage variables.
 	#
-	return [
-	map {
+	return [ map {
 		my $a_idx = ($a_degree > $_)? $_: $a_degree;
 		my $b_from = $_ - $a_idx;
 		my $b_to = ($b_degree > $_)? $_: $b_degree;
@@ -445,8 +456,7 @@ sub pl_mult
 			$c += $av->[--$a_idx] * $bv->[$b_idx];
 		}
 		$c;
-	} (0 .. $a_degree + $b_degree)
-	];
+	} (0 .. $a_degree + $b_degree) ];
 }
 
 =head3 pl_derivative()
@@ -555,6 +565,11 @@ L<http://search.cpan.org/dist/Math-Utils/>
 
 Copyright 2015 by John M. Gamble
 
+This program is free software; you can redistribute it and/or modify it
+under the terms of the the Artistic License (2.0). You may obtain a
+copy of the full license at:
+
+L<http://www.perlfoundation.org/artistic_license_2_0>
 
 =cut
 
