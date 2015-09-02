@@ -9,6 +9,8 @@ t/01-log10.t
 t/02-copysign.t
 t/03-sign.t
 t/04-compare.t
+t/13-division.t
+t/14-derivative.t
 t/manifest.t
 t/pod.t
 LICENSE
