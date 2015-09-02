@@ -328,7 +328,7 @@ sub pl_add
 		splice(@bv, scalar @bv + $ldiff, -$ldiff):
 		splice(@av, scalar @av - $ldiff, $ldiff);
 
-	unshift @result, map($av[$_] + $bv[$_], 0..scalar @av);
+	unshift @result, map($av[$_] + $bv[$_], 0.. $#av);
 
 	return \@result;
 }
@@ -348,10 +348,10 @@ sub pl_sub
 	my $ldiff = scalar @av - scalar @bv;
 
 	my @result = ($ldiff < 0)?
-		splice(@bv, scalar @bv + $ldiff, -$ldiff):
+		map {-$_} splice(@bv, scalar @bv + $ldiff, -$ldiff):
 		splice(@av, scalar @av - $ldiff, $ldiff);
 
-	unshift @result, map($av[$_] - $bv[$_], 0..scalar @av);
+	unshift @result, map($av[$_] - $bv[$_], 0.. $#av);
 
 	return \@result;
 }
@@ -446,8 +446,8 @@ sub pl_mult
 	#
 	return [ map {
 		my $a_idx = ($a_degree > $_)? $_: $a_degree;
-		my $b_from = $_ - $a_idx;
 		my $b_to = ($b_degree > $_)? $_: $b_degree;
+		my $b_from = $_ - $a_idx;
 
 		my $c = $av->[$a_idx] * $bv->[$b_from];
 
