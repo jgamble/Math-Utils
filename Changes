@@ -1,10 +1,12 @@
 Revision history for Math-Utils
 
-     xx Month 2015
+1.00
+	2 Sep 2015
 	- Added the coefficient list functions for addition, subtraction,
-	  division (multiplication to come), derivative, antiderivative,
+	  division, multiplication, derivative, antiderivative,
 	  and evaluation (via Horner's method) of polynomials without
 	  actually creating a polynomial object.
+	- Added the tests for the above operations.
 0.02
 	30 Aug 2015
 	- CPAN testers caught a 5.10ism in the module, which is
@@ -14,12 +16,7 @@ Revision history for Math-Utils
 	  text and examples.
 	- Version bump; up to CPAN.
 0.01
-     xx Month 2015
-	- Added the coefficient list functions for addition, subtraction,
-	  division (multiplication to come), derivative, antiderivative,
-	  and evaluation (via Horner's method) of polynomials without
-	  actually creating a polynomial object.
-     18 Aug 2015
+	18 Aug 2015
 	- Collection of utility functions for Math modules, starting
 	  with the functions of Math-Fortran as a base.
 
