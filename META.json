@@ -10,7 +10,8 @@
       "math-utils",
       "sign",
       "logarithm",
-      "comparison"
+      "comparison",
+      "polymonial"
    ],
    "license" : [
       "perl_5"
@@ -40,7 +41,7 @@
    "provides" : {
       "Math::Utils" : {
          "file" : "lib/Math/Utils.pm",
-         "version" : "0.02"
+         "version" : "1.00"
       }
    },
    "release_status" : "stable",
@@ -52,5 +53,5 @@
          "url" : "git://github.com/jgamble/Math-Utils.git"
       }
    },
-   "version" : "0.02"
+   "version" : "1.00"
 }
