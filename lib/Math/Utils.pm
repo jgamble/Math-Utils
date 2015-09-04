@@ -11,7 +11,7 @@ our %EXPORT_TAGS = (
 	fortran => [ qw(log10 copysign) ],
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	utility => [ qw(sign) ],
-	polynomial => [ qw(horner pl_add pl_sub pl_div pl_mult pl_derivative pl_antiderivative) ],
+	polynomial => [ qw(pl_evaluate pl_add pl_sub pl_div pl_mult pl_derivative pl_antiderivative) ],
 );
 
 our @EXPORT_OK = (
@@ -21,7 +21,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '0.04';
+our $VERSION = '1.00';
 
 =head1 NAME
 
@@ -262,17 +262,17 @@ becomes
 In all functions the coeffcient list is passed by reference to the function,
 and the return values are all references to a coefficient list.
 
-It is assumed that any leading zeros in the coefficient lists have
+B<It is assumed that any leading zeros in the coefficient lists have
 already been removed before calling these functions, and that any leading
-zeros found in the returned lists will be handled by the caller.
+zeros found in the returned lists will be handled by the caller.>
 
 Although these functions are convenient for simple polynomial operations,
 for more advanced polynonial operations L<Math::Polynomial> is recommended.
 
-=head3 horner()
+=head3 pl_evaluate()
 
-    $y = horner(\@coefficients, $x);
-    @yvalues = horner(\@coefficients, \@xvalues);
+    $y = pl_evaluate(\@coefficients, $x);
+    @yvalues = pl_evaluate(\@coefficients, \@xvalues);
 
 Returns either a y-value for a corresponding x-value, or a list of
 y-values on the polynomial for a corresponding list of x-points,
@@ -280,7 +280,7 @@ using Horner's method.
 
 =cut
 
-sub horner
+sub pl_evaluate
 {
 	my @coefficients = @{$_[0]};
 	my $xval_ref = $_[1];

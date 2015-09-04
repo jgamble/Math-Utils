@@ -1,10 +1,11 @@
 #
 # Test if the polynomial functions work with coefficients that are objects.
 #
-use Test::Simple tests => 1;
+use Test::Simple tests => 2;
 
 use Math::Utils qw(:polynomial);
 use Math::Complex;
+use Math::BigRat;
 use strict;
 use warnings;
 
@@ -46,6 +47,30 @@ ok((polycmp($ans_ref, \@c1ans) == 0),
 	" f() = [ " . join(", ", @c1x) . " ] * \n" .
 	" f() = [ " . join(", ", @c1y) . " ] = \n" .
 	" f'() = [ " . join(", ", @{$ans_ref}) . " ].\n"
+);
+
+
+
+#
+# (x + cplx(-3, 2)) * (x + cplx(3, 2)) = ?
+#
+my @c2x = (Math::BigRat->new('3/2'), Math::BigRat->new('103/256'), 1);
+my @c2y = (Math::BigRat->new('7/2'), Math::BigRat->new('103/256'), 1);
+
+my @c2ans = (
+	Math::BigRat->new('21/4'),
+	Math::BigRat->new('515/256'),
+	Math::BigRat->new('338289/63536'),
+	Math::BigRat->new('103/128'),
+	1
+);
+
+my $big_ref = pl_mult(\@c2x, \@c2y);
+
+ok((polycmp($ans_ref, \@c1ans) == 0),
+	" f() = [ " . join(", ", @c2x) . " ] * \n" .
+	" f() = [ " . join(", ", @c2y) . " ] = \n" .
+	" f'() = [ " . join(", ", @{$big_ref}) . " ].\n"
 );
 
 

@@ -1,7 +1,5 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl division.t'
 
-use Test::More tests => 3;
+use Test::More tests => 5;
 
 use Math::Utils qw(:polynomial);
 use strict;
@@ -47,10 +45,22 @@ my @case0 = (
 		[0, 0, 0, 0]
 	],
 	[
+		[1, 6, 15, 32, 58, 88, 116, 160, 165, 138, 133],
+		[1, 3, 5, 7, 11, 13, 17, 19],
+		[1, 3, 1, 7],
+		[0, 0, 0, 0, 0, 0, 0]
+	],
+	[
 		[4, 12, 9, 3],
 		[1, 3, 3, 1],
 		[3],
 		[1, 3, 0]
+	],
+	[
+		[4, 13, 4, -9, 6],
+		[1, 2],
+		[4, 5, -6, 3],
+		[0]
 	]
 );
 

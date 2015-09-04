@@ -12,7 +12,7 @@ t/04-compare.t
 t/10-add.t
 t/11-subtract.t
 t/12-multiply.t
-t/13-division.t
+t/13-divide.t
 t/14-derivative.t
 t/manifest.t
 t/pod.t
