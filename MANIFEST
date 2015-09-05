@@ -14,6 +14,7 @@ t/11-subtract.t
 t/12-multiply.t
 t/13-divide.t
 t/14-derivative.t
+t/15-objcoeff.t
 t/manifest.t
 t/pod.t
 LICENSE
