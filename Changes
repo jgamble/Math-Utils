@@ -1,5 +1,13 @@
 Revision history for Math-Utils
 
+1.01
+	5 Sep 2015
+	- I had left test file 15-objcoeff.t off the MANIFEST list. Oops.
+	- Embarrassing number of grammatical and spelling errors fixed.
+	- Clarified a couple of examples, and extended the
+	  pl_antiderivative() documentation with respect to the
+	  constant term.
+	- Version bump; up to CPAN.
 1.00
 	3 Sep 2015
 	- Added the coefficient list functions for addition, subtraction,
