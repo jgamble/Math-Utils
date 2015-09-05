@@ -21,18 +21,18 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 =head1 NAME
 
-Math::Utils - Useful computational or mathematical functions.
+Math::Utils - Useful mathematical functions not in Perl.
 
 =head1 SYNOPSIS
 
-    use Math::Utils qw(:fortran);    # Functions originated from Fortran
+    use Math::Utils qw(:fortran);    # Functions originally from Fortran
 
     #
-    # $dist will be negative or positive $offest, depending
+    # $dist will be doubled negative or positive $offest, depending
     # on whether ($from - $to) is positive or negative.
     #
     my $dist = 2 * copysign($offset, $from - $to);
@@ -79,7 +79,7 @@ or
 
 or
 
-    use Math::Utils qw(:polynomial);    # Basic ops.
+    use Math::Utils qw(:polynomial);    # Basic polynomial ops
 
     #
     # Coefficient lists run from 0th degree upward, left to right.
@@ -89,11 +89,11 @@ or
     my @c3 = (1, -1, 1)
 
     my $c_ref = pl_mult(\@c1, \@c2);
-    my $c_ref = pl_add($c_ref, \@c3);
+    $c_ref = pl_add($c_ref, \@c3);
 
 =head1 EXPORT
 
-All functions can be exported by name, or by using a tag that they're
+All functions can be exported by name, or by using the tag that they're
 grouped under.
 
 =cut
@@ -103,12 +103,12 @@ grouped under.
 =head3 sign()
 
   $s = sign($x);
-  @slist = sign(@values);
+  @valsigns = sign(@values);
 
 Returns -1 if the argument is negative, 0 if the argument is zero, and 1
 if the argument is positive.
 
-In list form applies the same operation to each member of the list.
+In list form it applies the same operation to each member of the list.
 
 =cut
 
@@ -120,7 +120,7 @@ sub sign
 
 =head2 fortran tag
 
-These are functions that originated in FORTRAN, and were implented
+These are functions that originated in FORTRAN, and were implemented
 in Perl in the module L<Math::Fortran>, by J. A. R. Williams.
 
 They are here with a name change -- copysign() was known as sign()
@@ -211,7 +211,7 @@ sub generate_fltcmp
 
 Returns a list of comparison functions that will compare values using a
 tolerance that you supply. The generated functions will be the equivalent
-of the equal, not equal, greater than, greater that or equal, less than,
+of the equal, not equal, greater than, greater than or equal, less than,
 and less than or equal operators.
 
 
@@ -225,7 +225,7 @@ Of course, if you were only interested in not equal, you could use:
 
   my(@not_around5) = grep {&$ne($_, 5)} @xvals;
 
-Internally, the functions all created using generate_fltcmp().
+Internally, the functions are all created using generate_fltcmp().
 
 =cut
 
@@ -264,15 +264,16 @@ and the return values are all references to a coefficient list.
 
 B<It is assumed that any leading zeros in the coefficient lists have
 already been removed before calling these functions, and that any leading
-zeros found in the returned lists will be handled by the caller.>
+zeros found in the returned lists will be handled by the caller.> This caveat
+is particulary important to note in the case of C<pl_div()>.
 
 Although these functions are convenient for simple polynomial operations,
 for more advanced polynonial operations L<Math::Polynomial> is recommended.
 
 =head3 pl_evaluate()
 
-    $y = pl_evaluate(\@coefficients, $x);
-    @yvalues = pl_evaluate(\@coefficients, \@xvalues);
+  $y = pl_evaluate(\@coefficients, $x);
+  @yvalues = pl_evaluate(\@coefficients, \@xvalues);
 
 Returns either a y-value for a corresponding x-value, or a list of
 y-values on the polynomial for a corresponding list of x-points,
@@ -312,7 +313,7 @@ sub pl_evaluate
 
 =head3 pl_add()
 
-    $polyn_ref = pl_add(\@m, \@n);
+  $polyn_ref = pl_add(\@m, \@n);
 
 Add two lists of numbers as though they were polynomial coefficients.
 
@@ -335,7 +336,7 @@ sub pl_add
 
 =head3 pl_sub()
 
-    $polyn_ref = pl_sub(\@m, \@n);
+  $polyn_ref = pl_sub(\@m, \@n);
 
 Subtract the second list of numbers from the first as though they were polynomial coefficients.
 
@@ -358,7 +359,7 @@ sub pl_sub
 
 =head3 pl_div()
 
-    ($q_ref, $r_ref) = pl_div(\@numerator, \@divisor);
+  ($q_ref, $r_ref) = pl_div(\@numerator, \@divisor);
 
 Synthetic division for polynomials. Divides the first list of coefficients
 by the second list.
@@ -368,14 +369,14 @@ Returns references to the quotient and the remainder.
 Remember to check for leading zeros (which are rightmost in the list) in
 the returned values. For example,
 
-    my @m1 = (4, 12, 9, 3);
-    my @m2 = (1, 3, 3, 1);
+  my @m1 = (4, 12, 9, 3);
+  my @m2 = (1, 3, 3, 1);
 
-    my($q_ref, $r_ref) = pl_div(\@n, \@d);
+  my($q_ref, $r_ref) = pl_div(\@n, \@d);
 
-After division you will have returned
-
-    (3) as the quotient, and (1, 3, 0) as the remainder.
+After division you will have returned C<(3)> as the quotient,
+and C<(1, 3, 0)> as the remainder. In general, you will want to remove
+the leading zero in the remainder.
 
 =cut
 
@@ -426,7 +427,7 @@ sub pl_div
 
 =head3 pl_mult()
 
-    $m_ref = pl_mult(\@coefficients1, \@coefficients2);
+  $m_ref = pl_mult(\@coefficients1, \@coefficients2);
 
 Returns the reference to the product of the two multiplicands.
 
@@ -461,7 +462,7 @@ sub pl_mult
 
 =head3 pl_derivative()
 
-    $poly_ref = pl_derivative(\@coefficients)
+  $poly_ref = pl_derivative(\@coefficients);
 
 Returns the derivative of a polynomial.
 
@@ -482,11 +483,20 @@ sub pl_derivative
 
 =head3 pl_antiderivative()
 
-    $poly_ref = pl_antiderivative(\@coefficients)
+  $poly_ref = pl_antiderivative(\@coefficients);
 
 Returns the antiderivative of a polynomial. The constant value is
 always set to zero and will need to be changed by the caller if a
 different constant is needed.
+
+  my @coefficients = (1, 2, -3, 2);
+  my $integral = pl_antiderivative(\@coefficients);
+
+  #
+  # Integral needs to be 0 at x = 1.
+  #
+  my @coeff1 = @{$integral};
+  $coeff1[0] = - pl_evaluate($integral, 1);
 
 =cut
 
@@ -513,13 +523,13 @@ John M. Gamble, C<< <jgamble at cpan.org> >>
 
 =head1 SEE ALSO
 
-Among other functions, L<List::Util> has the mathematically useful functions
-max(), min(), product(), sum(), and sum0().
-
-L<List::MoreUtils> has the function minmax().
-
 L<Math::Polynomial> for a complete set of polynomial operations, with the
 added convenience that objects bring.
+
+Among its other functions, L<List::Util> has the mathematically useful
+functions max(), min(), product(), sum(), and sum0().
+
+L<List::MoreUtils> has the function minmax().
 
 =head1 BUGS
 
@@ -530,10 +540,7 @@ automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT
 
-You can find documentation for this module with the perldoc command.
-
-    perldoc Math::Utils
-
+This module is on Github at L<https://github.com/jgamble/Math-Utils>.
 
 You can also look for information at:
 
@@ -560,6 +567,7 @@ L<http://search.cpan.org/dist/Math-Utils/>
 
 =head1 ACKNOWLEDGEMENTS
 
+To J. A. R. Williams who got the ball rolling with L<Math::Fortran>.
 
 =head1 LICENSE AND COPYRIGHT
 
