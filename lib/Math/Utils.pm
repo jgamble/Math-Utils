@@ -369,8 +369,8 @@ Returns references to the quotient and the remainder.
 Remember to check for leading zeros (which are rightmost in the list) in
 the returned values. For example,
 
-  my @m1 = (4, 12, 9, 3);
-  my @m2 = (1, 3, 3, 1);
+  my @n = (4, 12, 9, 3);
+  my @d = (1, 3, 3, 1);
 
   my($q_ref, $r_ref) = pl_div(\@n, \@d);
 
@@ -504,14 +504,13 @@ sub pl_antiderivative
 {
 	my @coefficients = @{$_[0]};
 	my $degree = scalar @coefficients;
-	my $n = 1;
 
 	#
 	# Sanity check if its an empty list.
 	#
 	return [0] if ($degree < 1);
 
-	$coefficients[$_] /= ++$n for (1..$degree - 1);
+	$coefficients[$_ - 1] /= $_ for (2..$degree);
 
 	unshift @coefficients, 0;
 	return \@coefficients;
@@ -531,12 +530,16 @@ functions max(), min(), product(), sum(), and sum0().
 
 L<List::MoreUtils> has the function minmax().
 
+L<Math::Prime::Util> has gcd() and lcm() functions, as well as vecsum(),
+vecprod(), vecmin(), and vecmax(), which are like the L<List::Util>
+functions but which can force integer use, and when appropriate use
+L<Math::BigInt>.
+
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-math-util at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Math-Utils>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
 
 =head1 SUPPORT
 
