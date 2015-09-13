@@ -1,5 +1,11 @@
 Revision history for Math-Utils
 
+1.02
+	15 Sep 2015
+	- Documentation error in pl_div() (mis-named variables
+	  in the example).
+	- Extended the SEE ALSO paragraph.
+	- Very minor code clean-up in pl_antiderivative().
 1.01
 	5 Sep 2015
 	- I had left test file 15-objcoeff.t off the MANIFEST list. Oops.
