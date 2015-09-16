@@ -16,6 +16,7 @@ t/13-divide.t
 t/14-derivative.t
 t/15-objcoeff.t
 t/16-evaluate.t
+t/17-derivative-eval.t
 t/manifest.t
 t/pod.t
 LICENSE

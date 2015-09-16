@@ -11,7 +11,9 @@ our %EXPORT_TAGS = (
 	fortran => [ qw(log10 copysign) ],
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	utility => [ qw(sign) ],
-	polynomial => [ qw(pl_evaluate pl_add pl_sub pl_div pl_mult pl_derivative pl_antiderivative) ],
+	polynomial => [ qw(pl_evaluate pl_dxevaluate
+			pl_add pl_sub pl_div pl_mult
+			pl_derivative pl_antiderivative) ],
 );
 
 our @EXPORT_OK = (
@@ -309,6 +311,60 @@ sub pl_evaluate
 	}
 
 	return wantarray? @results: $results[0];
+}
+
+=head3 pl_dxevaluate(\@coefficients, $x);
+
+    ($y, $dy, $ddy) = pl_dxevaluate(\@coefficients, $x);
+
+Returns p(x), p'(x), and p"(x) of the polynomial for an
+x-value, using Horner's method. Note that unlike pl_evaluate()
+above, the function can only use one x-value.
+
+=cut
+
+sub pl_dxevaluate
+{
+	my($coef_ref, $x) = @_;
+	my(@coefficients) = @$coef_ref;
+	my $n = $#coefficients;
+	my $val = pop @coefficients;
+	my $d1val = $val * $n;
+	my $d2val = 0;
+
+	#
+	# Special case for the linear eq'n (the y = constant eq'n
+	# takes care of itself).
+	#
+	if ($n == 1)
+	{
+		$d1val = $val;
+		$val = $val * $x + $coefficients[0];
+	}
+	elsif ($n >= 2)
+	{
+		my $lastn = --$n;
+		$d2val = $d1val * $n;
+
+		#
+		# Loop through the coefficients, except for
+		# the linear and constant terms.
+		#
+		foreach my $c (reverse @coefficients[2..$lastn])
+		{
+			$val = $val * $x + $c;
+			$d1val = $d1val * $x + ($c *= $n--);
+			$d2val = $d2val * $x + ($c * $n);
+		}
+
+		#
+		# Handle the last two coefficients.
+		#
+		$d1val = $d1val * $x + $coefficients[1];
+		$val = ($val * $x + $coefficients[1]) * $x + $coefficients[0];
+	}
+
+	return ($val, $d1val, $d2val);
 }
 
 =head3 pl_add()
