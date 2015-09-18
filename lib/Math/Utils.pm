@@ -8,16 +8,15 @@ use Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
-	fortran => [ qw(log10 copysign) ],
 	compare => [ qw(generate_fltcmp generate_relational) ],
-	utility => [ qw(sign) ],
+	fortran => [ qw(log10 copysign) ],
+	utility => [ qw(log10 copysign sign) ],
 	polynomial => [ qw(pl_evaluate pl_dxevaluate
 			pl_add pl_sub pl_div pl_mult
 			pl_derivative pl_antiderivative) ],
 );
 
 our @EXPORT_OK = (
-	@{ $EXPORT_TAGS{fortran} },
 	@{ $EXPORT_TAGS{compare} },
 	@{ $EXPORT_TAGS{utility} },
 	@{ $EXPORT_TAGS{polynomial} },
@@ -31,7 +30,11 @@ Math::Utils - Useful mathematical functions not in Perl.
 
 =head1 SYNOPSIS
 
-    use Math::Utils qw(:fortran);    # Functions originally from Fortran
+    use Math::Utils qw(:utility);    # Useful functions
+
+    $dir = sign($z - $w);
+
+    @ternaries = sign(@coefficients);
 
     #
     # $dist will be doubled negative or positive $offest, depending
@@ -73,14 +76,6 @@ or
 
 or
 
-    use Math::Utils qw(:utility);    # Other useful functions
-
-    $dir = sign($z - $w);
-
-    @ternaries = sign(@coefficients);
-
-or
-
     use Math::Utils qw(:polynomial);    # Basic polynomial ops
 
     #
@@ -102,6 +97,13 @@ grouped under.
 
 =head2 utility tag
 
+Useful, general-purpose functions, including those that originated in
+FORTRAN and were implemented in Perl in the module L<Math::Fortran>,
+by J. A. R. Williams.
+
+There is a name change -- copysign() was known as sign()
+in Math::Fortran.
+
 =head3 sign()
 
   $s = sign($x);
@@ -120,13 +122,6 @@ sub sign
 		($_[0] < 0)? -1: (($_[0] > 0)? 1: 0);
 }
 
-=head2 fortran tag
-
-These are functions that originated in FORTRAN, and were implemented
-in Perl in the module L<Math::Fortran>, by J. A. R. Williams.
-
-They are here with a name change -- copysign() was known as sign()
-in Math::Fortran.
 
 =head3 copysign()
 
