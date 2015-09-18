@@ -1,5 +1,13 @@
 Revision history for Math-Utils
 
+1.03
+	18 Sep 2015
+	- Put :fortran tagged functions copysign() and log10()
+	  in the :utility tagging. The :fortran tag sticks around
+	  though.
+	- New function pl_dxevaluate() for returning the y, dy,
+	  d2y values of the polynomial at x.
+	- New test files for pl_evaluate() and pl_dxevaluate().
 1.02
 	15 Sep 2015
 	- Documentation error in pl_div() (mis-named variables
