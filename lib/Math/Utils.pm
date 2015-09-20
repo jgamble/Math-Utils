@@ -10,7 +10,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = (
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	fortran => [ qw(log10 copysign) ],
-	utility => [ qw(log10 copysign sign) ],
+	utility => [ qw(log10 copysign flipsign sign) ],
 	polynomial => [ qw(pl_evaluate pl_dxevaluate
 			pl_add pl_sub pl_div pl_mult
 			pl_derivative pl_antiderivative) ],
@@ -32,7 +32,10 @@ Math::Utils - Useful mathematical functions not in Perl.
 
     use Math::Utils qw(:utility);    # Useful functions
 
-    $dir = sign($z - $w);
+    #
+    # Two uses of sign().
+    #
+    $d = sign($z - $w);
 
     @ternaries = sign(@coefficients);
 
@@ -43,9 +46,14 @@ Math::Utils - Useful mathematical functions not in Perl.
     my $dist = 2 * copysign($offset, $from - $to);
 
     #
+    # Change increment direction if goal is negative.
+    #
+    $incr = flipsign($incr, $goal);
+
+    #
     # Base 10 logarithm.
     #
-    my $scale = log10($pagewidth);
+    $scale = log10($pagewidth);
 
 or
 
@@ -106,8 +114,8 @@ in Math::Fortran.
 
 =head3 sign()
 
-  $s = sign($x);
-  @valsigns = sign(@values);
+    $s = sign($x);
+    @valsigns = sign(@values);
 
 Returns -1 if the argument is negative, 0 if the argument is zero, and 1
 if the argument is positive.
@@ -125,16 +133,16 @@ sub sign
 
 =head3 copysign()
 
-  $ms = copysign($m, $n);
-  $s = copysign($x);
+    $ms = copysign($m, $n);
+    $s = copysign($x);
 
 Take the sign of the second argument and apply it to the first. Zero
 is considered part of the positive signs.
 
-  copysign(-5, 0);  # Returns 5.
-  copysign(-5, 7);  # Returns 5.
-  copysign(-5, -7);  # Returns -5.
-  copysign(5, -7);  # Returns -5.
+    copysign(-5, 0);  # Returns 5.
+    copysign(-5, 7);  # Returns 5.
+    copysign(-5, -7); # Returns -5.
+    copysign(5, -7);  # Returns -5.
 
 If there is only one argument, return -1 if the argument is negative,
 otherwise return 1. For example, copysign(1, -4) and copysign(-4) both
@@ -148,10 +156,37 @@ sub copysign
 	return ($_[0] < 0)? -1: 1;
 }
 
+=head3 flipsign()
+
+    $ms = flipsign($m, $n);
+
+Multiply the signs of the arguments and apply it to the first. As
+with copysign(), zero is considered part of the positive signs.
+
+Effectively this means change the sign of the first argument if
+the second argument is negative.
+
+    flipsign(-5, 0);  # Returns -5.
+    flipsign(-5, 7);  # Returns -5.
+    flipsign(-5, -7); # Returns 5.
+    flipsign(5, -7);  # Returns -5.
+
+If for some reason flipsign() is called with a single argument,
+that argument is returned unchanged.
+
+=cut
+
+sub flipsign
+{
+	return -$_[0] if (@_ == 2 and $_[1] < 0);
+	return $_[0];
+}
+
+
 =head3 log10()
 
-  $xlog10 = log10($x);
-  @xlog10 = log10(@x);
+    $xlog10 = log10($x);
+    @xlog10 = log10(@x);
 
 Return the log base ten of the argument. A list form of the function
 is also provided.
@@ -186,9 +221,9 @@ argument compares as less than the second, 0 if the two arguments
 compare as equal, and 1 if the first argument compares as greater than
 the second.
 
-  my $fltcmp = generate_fltcmp(1.5e-7);
+    my $fltcmp = generate_fltcmp(1.5e-7);
 
-  my(@xpos) = grep {&$fltcmp($_, 0) == 1} @xvals;
+    my(@xpos) = grep {&$fltcmp($_, 0) == 1} @xvals;
 
 =cut
 
@@ -212,15 +247,15 @@ of the equal, not equal, greater than, greater than or equal, less than,
 and less than or equal operators.
 
 
-  my($eq, $ne, $gt, $ge, $lt, $le) = generate_relational(1.5e-7);
+    my($eq, $ne, $gt, $ge, $lt, $le) = generate_relational(1.5e-7);
 
-  my(@approx_5) = grep {&$eq($_, 5)} @xvals;
+    my(@approx_5) = grep {&$eq($_, 5)} @xvals;
 
 Of course, if you were only interested in not equal, you could use:
 
-  my(undef, $ne) = generate_relational(1.5e-7);
+    my(undef, $ne) = generate_relational(1.5e-7);
 
-  my(@not_around5) = grep {&$ne($_, 5)} @xvals;
+    my(@not_around5) = grep {&$ne($_, 5)} @xvals;
 
 Internally, the functions are all created using generate_fltcmp().
 
@@ -243,21 +278,17 @@ sub generate_relational
 	);
 }
 
-
 =head2 polynomial tag
 
 Perform some polynomial operations on plain lists of coefficients.
 
-The coefficient lists are presumed to go from low order to high, e.g.:
-
-    1 + 2x + 4x**2 + 8x**3
-
-becomes
-
-    (1, 2, 4, 8)
+    #
+    # The coefficient lists are presumed to go from low order to high:
+    #
+    @coefficients = (1, 2, 4, 8);    # 1 + 2x + 4x**2 + 8x**3
 
 In all functions the coeffcient list is passed by reference to the function,
-and the return values are all references to a coefficient list.
+and the functions that return coefficients all return references to a coefficient list.
 
 B<It is assumed that any leading zeros in the coefficient lists have
 already been removed before calling these functions, and that any leading
@@ -269,11 +300,11 @@ for more advanced polynonial operations L<Math::Polynomial> is recommended.
 
 =head3 pl_evaluate()
 
-  $y = pl_evaluate(\@coefficients, $x);
-  @yvalues = pl_evaluate(\@coefficients, \@xvalues);
+    $y = pl_evaluate(\@coefficients, $x);
+    @yvalues = pl_evaluate(\@coefficients, \@xvalues);
 
 Returns either a y-value for a corresponding x-value, or a list of
-y-values on the polynomial for a corresponding list of x-points,
+y-values on the polynomial for a corresponding list of x-values,
 using Horner's method.
 
 =cut
@@ -283,37 +314,37 @@ sub pl_evaluate
 	my @coefficients = @{$_[0]};
 	my $xval_ref = $_[1];
 
-	my @values;
+	my @xvalues;
 
 	#
 	# It could happen. Someone might type \$x instead of $x.
 	#
-	@values = (ref $xval_ref eq "ARRAY")? @$xval_ref:
+	@xvalues = (ref $xval_ref eq "ARRAY")? @$xval_ref:
 		(((ref $xval_ref eq "SCALAR")? $$xval_ref: $xval_ref));
 
 	#
 	# Move the leading coefficient off the polynomial list
 	# and use it as our starting value(s).
 	#
-	my @results = (pop @coefficients) x scalar @values;
+	my @results = (pop @coefficients) x scalar @xvalues;
 
 	foreach my $c (reverse @coefficients)
 	{
-		foreach my $j (0..$#values)
+		foreach my $j (0..$#xvalues)
 		{
-			$results[$j] = $results[$j] * $values[$j] + $c;
+			$results[$j] = $results[$j] * $xvalues[$j] + $c;
 		}
 	}
 
 	return wantarray? @results: $results[0];
 }
 
-=head3 pl_dxevaluate(\@coefficients, $x);
+=head3 pl_dxevaluate();
 
     ($y, $dy, $ddy) = pl_dxevaluate(\@coefficients, $x);
 
 Returns p(x), p'(x), and p"(x) of the polynomial for an
-x-value, using Horner's method. Note that unlike pl_evaluate()
+x-value, using Horner's method. Note that unlike C<pl_evaluate()>
 above, the function can only use one x-value.
 
 =cut
@@ -364,7 +395,7 @@ sub pl_dxevaluate
 
 =head3 pl_add()
 
-  $polyn_ref = pl_add(\@m, \@n);
+    $polyn_ref = pl_add(\@m, \@n);
 
 Add two lists of numbers as though they were polynomial coefficients.
 
@@ -387,7 +418,7 @@ sub pl_add
 
 =head3 pl_sub()
 
-  $polyn_ref = pl_sub(\@m, \@n);
+    $polyn_ref = pl_sub(\@m, \@n);
 
 Subtract the second list of numbers from the first as though they were polynomial coefficients.
 
@@ -410,7 +441,7 @@ sub pl_sub
 
 =head3 pl_div()
 
-  ($q_ref, $r_ref) = pl_div(\@numerator, \@divisor);
+    ($q_ref, $r_ref) = pl_div(\@numerator, \@divisor);
 
 Synthetic division for polynomials. Divides the first list of coefficients
 by the second list.
@@ -420,10 +451,10 @@ Returns references to the quotient and the remainder.
 Remember to check for leading zeros (which are rightmost in the list) in
 the returned values. For example,
 
-  my @n = (4, 12, 9, 3);
-  my @d = (1, 3, 3, 1);
+    my @n = (4, 12, 9, 3);
+    my @d = (1, 3, 3, 1);
 
-  my($q_ref, $r_ref) = pl_div(\@n, \@d);
+    my($q_ref, $r_ref) = pl_div(\@n, \@d);
 
 After division you will have returned C<(3)> as the quotient,
 and C<(1, 3, 0)> as the remainder. In general, you will want to remove
@@ -478,7 +509,7 @@ sub pl_div
 
 =head3 pl_mult()
 
-  $m_ref = pl_mult(\@coefficients1, \@coefficients2);
+    $m_ref = pl_mult(\@coefficients1, \@coefficients2);
 
 Returns the reference to the product of the two multiplicands.
 
@@ -513,7 +544,7 @@ sub pl_mult
 
 =head3 pl_derivative()
 
-  $poly_ref = pl_derivative(\@coefficients);
+    $poly_ref = pl_derivative(\@coefficients);
 
 Returns the derivative of a polynomial.
 
@@ -534,7 +565,7 @@ sub pl_derivative
 
 =head3 pl_antiderivative()
 
-  $poly_ref = pl_antiderivative(\@coefficients);
+    $poly_ref = pl_antiderivative(\@coefficients);
 
 Returns the antiderivative of a polynomial. The constant value is
 always set to zero and will need to be changed by the caller if a
