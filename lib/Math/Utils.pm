@@ -22,7 +22,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '1.02';
+our $VERSION = '1.04';
 
 =head1 NAME
 
@@ -616,6 +616,10 @@ L<Math::Prime::Util> has gcd() and lcm() functions, as well as vecsum(),
 vecprod(), vecmin(), and vecmax(), which are like the L<List::Util>
 functions but which can force integer use, and when appropriate use
 L<Math::BigInt>.
+
+L<Math::VecStat> Likewise has min(), max(), sum() (which can take
+as arguments array references as well as arrays), plus maxabs(),
+minabs(), sumbyelement(), convolute(), and other functions.
 
 =head1 BUGS
 
