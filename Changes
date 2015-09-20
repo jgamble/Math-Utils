@@ -1,5 +1,13 @@
 Revision history for Math-Utils
 
+1.04
+	20 Sep 2015
+	- Bumped the version number everywhere but in the module
+	  itself. This will probably complicate something, so
+	  fix this everywhere with a version 1.04.
+	- Add a flipsign() function to the :utility list.
+	- More documention clean-up. Mention Math::VecStat
+	  in the SEE ALSO.
 1.03
 	18 Sep 2015
 	- Put :fortran tagged functions copysign() and log10()
