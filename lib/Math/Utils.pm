@@ -126,7 +126,7 @@ In list form it applies the same operation to each member of the list.
 
 sub sign
 {
-	return wantarray? map(($_ < 0)? -1: (($_ > 0)? 1: 0), @_):
+	return wantarray? map{($_ < 0)? -1: (($_ > 0)? 1: 0)} @_:
 		($_[0] < 0)? -1: (($_[0] > 0)? 1: 0);
 }
 
@@ -555,7 +555,7 @@ sub pl_derivative
 	my @coefficients = @{$_[0]};
 	my $degree = $#coefficients;
 
-	return [] if ($degree <= 1);
+	return [] if ($degree < 1);
 
 	$coefficients[$_] *= $_ for (2..$degree);
 

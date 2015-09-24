@@ -1,7 +1,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl derivative.t'
 
-use Test::Simple tests => 12;
+use Test::Simple tests => 14;
 
 use Math::Utils qw(:polynomial);
 use strict;
@@ -33,6 +33,8 @@ sub polycmp
 # Pairs of polynomnials and their derivatives.
 #
 my @case = (
+	[1], [],
+	[3, 5], [5],
 	[1, 24, 32], [24, 64],
 	[289, 4, 3, 2, 1], [4, 6, 6, 4],
 	[-1, -3, 0, 0, 0, 1], [-3, 0, 0, 0, 5],
