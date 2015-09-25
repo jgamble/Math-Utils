@@ -1,7 +1,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl derivative.t'
 
-use Test::Simple tests => 14;
+use Test::Simple tests => 16;
 
 use Math::Utils qw(:polynomial);
 use strict;
