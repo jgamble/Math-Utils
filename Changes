@@ -1,5 +1,9 @@
 Revision history for Math-Utils
 
+1.05
+	25 Sep 2015
+	- Bug in pl_derivative() for linear equation case.
+	- Added test cases to cover it.
 1.04
 	20 Sep 2015
 	- Bumped the version number everywhere but in the module
