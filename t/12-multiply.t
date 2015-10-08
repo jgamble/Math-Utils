@@ -1,6 +1,6 @@
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl division.t'
-
+# `make test'. After `make install' it should work as `perl 12-multiply.t'
+use 5.010001;
 use Test::More tests => 3;
 
 use Math::Utils qw(:polynomial);

@@ -1,6 +1,6 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl 17-derivative-eval.t'
-
+use 5.010001;
 use Test::Simple tests => 10;
 
 use Math::Utils qw(:polynomial :compare);

@@ -1,6 +1,6 @@
-#
-# Test if the polynomial functions work with coefficients that are objects.
-#
+# Before `make install' is performed this script should be runnable with
+# `make test'. After `make install' it should work as `perl 15-objcoeff.t'
+use 5.010001;
 use Test::Simple tests => 2;
 
 use Math::Utils qw(:polynomial);
@@ -10,7 +10,12 @@ use strict;
 use warnings;
 
 #
-# returns 0 (equal) or 1 (not equal). There's no -1 value, unlike other cmp functions.
+# Test if the polynomial functions work with coefficients that are objects.
+#
+
+#
+# returns 0 (equal) or 1 (not equal). There's no -1 value, unlike other
+# cmp functions.
 #
 sub polycmp
 {
