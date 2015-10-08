@@ -41,7 +41,7 @@
    "provides" : {
       "Math::Utils" : {
          "file" : "lib/Math/Utils.pm",
-         "version" : "1.05"
+         "version" : "1.06"
       }
    },
    "release_status" : "stable",
@@ -53,5 +53,5 @@
          "url" : "git://github.com/jgamble/Math-Utils.git"
       }
    },
-   "version" : "1.05"
+   "version" : "1.06"
 }
