@@ -22,7 +22,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 =head1 NAME
 
@@ -233,9 +233,9 @@ sub generate_fltcmp
 
 	return sub {
 		my($x, $y) = @_;
-		return -1 if ($x + $tol < $y);
-		return 1 if ($x - $tol > $y);
-		return 0;
+		return 0 if (abs($x - $y) <= $tol);
+		return -1 if ($x < $y);
+		return 1;
 	}
 }
 
