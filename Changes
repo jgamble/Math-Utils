@@ -1,5 +1,12 @@
 Revision history for Math-Utils
 
+1.06
+	7 Oct 2015
+	- The if statements were laid out in generate_fltcmp in
+	  a way that could return a -1 (less than) when the two
+	  values were actually equal within tolerance. Changed this.
+	- Renamed some test files so that the compare test comes
+	  first.
 1.05
 	25 Sep 2015
 	- Bug in pl_derivative() for linear equation case.
