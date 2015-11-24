@@ -23,10 +23,10 @@ name: Math-Utils
 provides:
   Math::Utils:
     file: lib/Math/Utils.pm
-    version: '1.06'
+    version: '1.07'
 requires:
   perl: v5.10.1
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://github.com/jgamble/Math-Utils.git
-version: '1.06'
+version: '1.07'
