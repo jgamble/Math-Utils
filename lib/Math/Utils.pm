@@ -3,6 +3,7 @@ package Math::Utils;
 use 5.010001;
 use strict;
 use warnings;
+use Carp;
 
 use Exporter;
 our @ISA = qw(Exporter);
@@ -10,7 +11,8 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = (
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	fortran => [ qw(log10 copysign) ],
-	utility => [ qw(log10 copysign flipsign sign) ],
+	utility => [ qw(log10 copysign flipsign
+			sign floor ceil moduli) ],
 	polynomial => [ qw(pl_evaluate pl_dxevaluate
 			pl_add pl_sub pl_div pl_mult
 			pl_derivative pl_antiderivative) ],
@@ -22,7 +24,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '1.06';
+our $VERSION = '1.07';
 
 =head1 NAME
 
@@ -31,6 +33,11 @@ Math::Utils - Useful mathematical functions not in Perl.
 =head1 SYNOPSIS
 
     use Math::Utils qw(:utility);    # Useful functions
+
+    #
+    # Base 10 logarithm.
+    #
+    $scale = log10($pagewidth);
 
     #
     # Two uses of sign().
@@ -51,9 +58,16 @@ Math::Utils - Useful mathematical functions not in Perl.
     $incr = flipsign($incr, $goal);
 
     #
-    # Base 10 logarithm.
+    # floor() and ceil() functions.
     #
-    $scale = log10($pagewidth);
+    $point = floor($goal);
+    $limit = ceil($goal);
+
+    #
+    # The remainders of n after successive divisions of b, or
+    # remainders after a set of divisions.
+    #
+    @rems = moduli($n, $b);
 
 or
 
@@ -112,6 +126,22 @@ by J. A. R. Williams.
 There is a name change -- copysign() was known as sign()
 in Math::Fortran.
 
+=head3 log10()
+
+    $xlog10 = log10($x);
+    @xlog10 = log10(@x);
+
+Return the log base ten of the argument. A list form of the function
+is also provided.
+
+=cut
+
+sub log10
+{
+	my $log10 = log(10);
+	return wantarray? map(log($_)/$log10, @_): log($_[0])/$log10;
+}
+
 =head3 sign()
 
     $s = sign($x);
@@ -129,7 +159,6 @@ sub sign
 	return wantarray? map{($_ < 0)? -1: (($_ > 0)? 1: 0)} @_:
 		($_[0] < 0)? -1: (($_[0] > 0)? 1: 0);
 }
-
 
 =head3 copysign()
 
@@ -182,21 +211,69 @@ sub flipsign
 	return $_[0];
 }
 
+=head3 floor()
 
-=head3 log10()
+    $b = floor($a/2);
 
-    $xlog10 = log10($x);
-    @xlog10 = log10(@x);
+    @ilist = floor(@numbers);
 
-Return the log base ten of the argument. A list form of the function
-is also provided.
+Returns the greatest integer less than or equal to its argument.
+A list form of the function also exists.
+
+    floor(1.5, 1.87, 1);        # Returns (1, 1, 1)
+    floor(-1.5, -1.87, -1);     # Returns (-2, -2, -1)
 
 =cut
 
-sub log10
+sub floor
 {
-	my $log10 = log(10);
-	return wantarray? map(log($_)/$log10, @_): log($_[0])/$log10;
+	return wantarray? map(($_ < 0 and int($_) != $_)? int($_ - 1): int($_), @_):
+		($_[0] < 0 and int($_[0]) != $_[0])? int($_[0] - 1): int($_[0]);
+}
+
+=head3 ceil()
+
+    $b = ceil($a/2);
+
+    @ilist = ceil(@numbers);
+
+Returns the lowest integer greater than or equal to its argument.
+A list form of the function also exists.
+
+    ceil(1.5, 1.87, 1);        # Returns (2, 2, 1)
+    ceil(-1.5, -1.87, -1);     # Returns (-1, -1, -1)
+
+=cut
+
+sub ceil
+{
+	return wantarray? map(($_ > 0 and int($_) != $_)? int($_ + 1): int($_), @_):
+		($_[0] > 0 and int($_[0]) != $_[0])? int($_[0] + 1): int($_[0]);
+}
+
+=head3 moduli()
+
+Return the moduli of a number after repeated divisions. The remainders are
+returned in a list from left to right.
+
+    @rems = moduli(29, 3);        # Returns (2, 0, 0, 1)
+    @digits = moduli(1899, 10);   # Returns (9, 9, 8, 1)
+
+=cut
+
+sub moduli
+{
+	my($n, $b) = @_;
+	my @mlist;
+	use integer;
+
+	for (;;)
+	{
+		push @mlist, $n % $b;
+		$n /= $b;
+		return @mlist if ($n == 0);
+	}
+	return ();
 }
 
 =head2 compare tag
@@ -328,9 +405,9 @@ sub pl_evaluate
 	#
 	my @results = (pop @coefficients) x scalar @xvalues;
 
-	foreach my $c (reverse @coefficients)
+	for my $c (reverse @coefficients)
 	{
-		foreach my $j (0..$#xvalues)
+		for my $j (0..$#xvalues)
 		{
 			$results[$j] = $results[$j] * $xvalues[$j] + $c;
 		}
@@ -339,7 +416,7 @@ sub pl_evaluate
 	return wantarray? @results: $results[0];
 }
 
-=head3 pl_dxevaluate();
+=head3 pl_dxevaluate()
 
     ($y, $dy, $ddy) = pl_dxevaluate(\@coefficients, $x);
 
@@ -376,7 +453,7 @@ sub pl_dxevaluate
 		# Loop through the coefficients, except for
 		# the linear and constant terms.
 		#
-		foreach my $c (reverse @coefficients[2..$lastn])
+		for my $c (reverse @coefficients[2..$lastn])
 		{
 			$val = $val * $x + $c;
 			$d1val = $d1val * $x + ($c *= $n--);
