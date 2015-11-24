@@ -1,5 +1,13 @@
 Revision history for Math-Utils
 
+1.07
+	23 Nov 2015
+	- Search using grep.cpan.me indicated that floor() and ceil()
+	  functions weren't defined in general-purpose modules (and
+	  the modules they were in were pretty heavy-weight). Decided
+	  to add them to the module.
+	- Repeated modulus of a number was worth making into
+	  utility function moduli().
 1.06
 	7 Oct 2015
 	- The if statements were laid out in generate_fltcmp in
@@ -13,7 +21,7 @@ Revision history for Math-Utils
 	- Added test cases to cover it.
 1.04
 	20 Sep 2015
-	- Bumped the version number everywhere but in the module
+	- I had bumped the version number everywhere but in the module
 	  itself. This will probably complicate something, so
 	  fix this everywhere with a version 1.04.
 	- Add a flipsign() function to the :utility list.
