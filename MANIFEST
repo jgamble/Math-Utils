@@ -9,6 +9,8 @@ t/01-compare.t
 t/02-copysign.t
 t/03-log10.t
 t/04-sign.t
+t/05-intfns.t
+t/06-moduli.t
 t/10-add.t
 t/11-subtract.t
 t/12-multiply.t
