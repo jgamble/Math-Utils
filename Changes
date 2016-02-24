@@ -1,5 +1,12 @@
 Revision history for Math-Utils
 
+1.08
+	24 Feb 2016
+	- Inlined the comparison functions of generate_relational().
+	- Default tolerance was just under square root of (an) epsilon,
+	  changed to to just over.
+	- Updated 01-compare.t to test edge cases.
+	- Added a log2() function, because why not.
 1.07
 	23 Nov 2015
 	- Search using grep.cpan.me indicated that floor() and ceil()

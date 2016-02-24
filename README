@@ -1,4 +1,4 @@
-Math-Utils version 1.07
+Math-Utils version 1.08
 
 Contains implementations of commonly used mathematical functions
 and operations that are not part of standard Perl.
@@ -36,7 +36,7 @@ You can also look for information at:
 
 LICENSE AND COPYRIGHT
 
-Copyright (C) 2015 John M. Gamble
+Copyright (C) 2016 John M. Gamble
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a

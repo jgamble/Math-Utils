@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = (
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	fortran => [ qw(log10 copysign) ],
-	utility => [ qw(log10 copysign flipsign
+	utility => [ qw(log10 log2 copysign flipsign
 			sign floor ceil moduli) ],
 	polynomial => [ qw(pl_evaluate pl_dxevaluate
 			pl_add pl_sub pl_div pl_mult
@@ -24,7 +24,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 =head1 NAME
 
@@ -35,9 +35,10 @@ Math::Utils - Useful mathematical functions not in Perl.
     use Math::Utils qw(:utility);    # Useful functions
 
     #
-    # Base 10 logarithm.
+    # Base 10 and base 2 logarithms.
     #
     $scale = log10($pagewidth);
+    $bits = log2(1/$probability);
 
     #
     # Two uses of sign().
@@ -47,10 +48,11 @@ Math::Utils - Useful mathematical functions not in Perl.
     @ternaries = sign(@coefficients);
 
     #
-    # $dist will be doubled negative or positive $offest, depending
-    # on whether ($from - $to) is positive or negative.
+    # Using copysign(), $dist will be doubled negative or
+    # positive $offest, depending upon whether ($from - $to)
+    # is positive or negative.
     #
-    my $dist = 2 * copysign($offset, $from - $to);
+    my $dist = copysign(2 * $offset, $from - $to);
 
     #
     # Change increment direction if goal is negative.
@@ -140,6 +142,22 @@ sub log10
 {
 	my $log10 = log(10);
 	return wantarray? map(log($_)/$log10, @_): log($_[0])/$log10;
+}
+
+=head3 log2()
+
+    $xlog2 = log2($x);
+    @xlog2 = log2(@x);
+
+Return the log base ten of the argument. A list form of the function
+is also provided.
+
+=cut
+
+sub log2
+{
+	my $log2 = log(2);
+	return wantarray? map(log($_)/$log2, @_): log($_[0])/$log2;
 }
 
 =head3 sign()
@@ -285,7 +303,7 @@ the comparison functions use a tolerance chosen by you. You may
 then use those functions from then on confident that comparisons
 will be consistent.
 
-If you do not provide a tolerance, a default tolerance of 1.49e-8
+If you do not provide a tolerance, a default tolerance of 1.49012e-8
 (approximately the square root of an Intel Pentium's
 L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon>)
 will be used.
@@ -304,9 +322,11 @@ the second.
 
 =cut
 
+my $default_tolerance = 1.49012e-8;
+
 sub generate_fltcmp
 {
-	my $tol = $_[0] // 1.49e-8;
+	my $tol = $_[0] // $default_tolerance;
 
 	return sub {
 		my($x, $y) = @_;
@@ -323,7 +343,6 @@ tolerance that you supply. The generated functions will be the equivalent
 of the equal, not equal, greater than, greater than or equal, less than,
 and less than or equal operators.
 
-
     my($eq, $ne, $gt, $ge, $lt, $le) = generate_relational(1.5e-7);
 
     my(@approx_5) = grep {&$eq($_, 5)} @xvals;
@@ -334,24 +353,24 @@ Of course, if you were only interested in not equal, you could use:
 
     my(@not_around5) = grep {&$ne($_, 5)} @xvals;
 
-Internally, the functions are all created using generate_fltcmp().
-
 =cut
 
 sub generate_relational
 {
-	my $fltcmp = generate_fltcmp($_[0]);
+	my $tol = $_[0] // $default_tolerance;
 
 	#
 	# In order: eq, ne, gt, ge, lt, le.
 	#
 	return (
-		sub {return &$fltcmp(@_) == 0;},	# eq
-		sub {return &$fltcmp(@_) != 0;},	# ne
-		sub {return &$fltcmp(@_) >  0;},	# gt
-		sub {return &$fltcmp(@_) >= 0;},	# ge
-		sub {return &$fltcmp(@_) <  0;},	# lt
-		sub {return &$fltcmp(@_) <= 0;},	# le
+		sub {return (abs($_[0] - $_[1]) <= $tol)? 1: 0;},	# eq
+		sub {return (abs($_[0] - $_[1]) >  $tol)? 1: 0;},	# ne
+
+		sub {return ((abs($_[0] - $_[1]) > $tol) and ($_[0] > $_[1]))? 1: 0;},	# gt
+		sub {return ((abs($_[0] - $_[1]) <= $tol) or ($_[0] > $_[1]))? 1: 0;},	# ge
+
+		sub {return ((abs($_[0] - $_[1]) > $tol) and ($_[0] < $_[1]))? 1: 0;},	# lt
+		sub {return ((abs($_[0] - $_[1]) <= $tol) or ($_[0] < $_[1]))? 1: 0;}	# le
 	);
 }
 
