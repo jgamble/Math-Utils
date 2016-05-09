@@ -6,9 +6,9 @@ MANIFEST			This list of files
 README
 t/00-load.t
 t/01-compare.t
-t/02-copysign.t
+t/02-signs.t
 t/03-logarithm.t
-t/04-sign.t
+t/04-fsum.t
 t/05-intfns.t
 t/06-moduli.t
 t/10-add.t

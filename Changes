@@ -1,5 +1,13 @@
 Revision history for Math-Utils
 
+1.09
+	11 May 2016
+	- New function fsum(), using Kahan's summation algorithm.
+	- Added tests in 17-derivative-eval.t to check for the
+	  linear polynomial and the constant-only polynomial.
+	  (They passed, but until now those cases hadn't been tested.)
+	- Extend the documentation for pl_div(), emphasizing the
+	  need to remove leading zeros.
 1.08
 	24 Feb 2016
 	- Inlined the comparison functions of generate_relational().

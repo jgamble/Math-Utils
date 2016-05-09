@@ -1,7 +1,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl 17-derivative-eval.t'
 use 5.010001;
-use Test::Simple tests => 10;
+use Test::Simple tests => 12;
 
 use Math::Utils qw(:polynomial :compare);
 use strict;
@@ -10,6 +10,38 @@ use warnings;
 my(@coef, $y, $dy, $d2y);
 
 my $fltcmp = generate_fltcmp();
+
+#
+# (13)
+#
+#
+# At point 5, even though the equation is a constant.
+#
+@coef = (13);
+
+($y, $dy, $d2y) = pl_dxevaluate(\@coef, 5);
+
+ok( (&$fltcmp($y, 13) == 0 and
+	&$fltcmp($dy, 0) == 0 and
+	&$fltcmp($d2y, 0) == 0),
+	"   [ " . join(", ", @coef) . " ]");
+
+#
+# (4, 21.5)
+#
+# (a linear equation).
+#
+# At point 5.
+#
+@coef = (-4, 21.5);
+
+($y, $dy, $d2y) = pl_dxevaluate(\@coef, 5);
+
+ok( (&$fltcmp($y, 103.5) == 0 and
+	&$fltcmp($dy, 21.5) == 0 and
+	&$fltcmp($d2y, 0) == 0),
+	"   [ " . join(", ", @coef) . " ]");
+
 
 #
 # (1, 0, 0, 0, -1)

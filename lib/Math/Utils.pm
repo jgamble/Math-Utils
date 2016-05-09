@@ -12,7 +12,7 @@ our %EXPORT_TAGS = (
 	compare => [ qw(generate_fltcmp generate_relational) ],
 	fortran => [ qw(log10 copysign) ],
 	utility => [ qw(log10 log2 copysign flipsign
-			sign floor ceil moduli) ],
+			sign floor ceil fsum moduli) ],
 	polynomial => [ qw(pl_evaluate pl_dxevaluate
 			pl_add pl_sub pl_div pl_mult
 			pl_derivative pl_antiderivative) ],
@@ -24,7 +24,7 @@ our @EXPORT_OK = (
 	@{ $EXPORT_TAGS{polynomial} },
 );
 
-our $VERSION = '1.08';
+our $VERSION = '1.09';
 
 =head1 NAME
 
@@ -64,6 +64,11 @@ Math::Utils - Useful mathematical functions not in Perl.
     #
     $point = floor($goal);
     $limit = ceil($goal);
+
+    #
+    # Safe(r) summation.
+    #
+    $tot = fsum(@inputs);
 
     #
     # The remainders of n after successive divisions of b, or
@@ -269,6 +274,35 @@ sub ceil
 		($_[0] > 0 and int($_[0]) != $_[0])? int($_[0] + 1): int($_[0]);
 }
 
+=head3 fsum()
+
+Return a sum of the values in the list, done in a manner to avoid rounding
+and cancellation errors. Currently this is done via
+L<Kahan's summation algorithm|https://en.wikipedia.org/wiki/Kahan_summation_algorithm>.
+
+=cut
+
+sub fsum
+{
+	my($sum, $c) = (0, 0);
+
+	for my $v (@_)
+	{
+		my $y = $v - $c;
+		my $t = $sum + $y;
+
+		#
+		# If we lost low-order bits of $y (usually because
+		# $sum is much larger than $y), save them in $c
+		# for the next loop iteration.
+		#
+		$c = ($t - $sum) - $y;
+		$sum = $t;
+	}
+
+	return $sum;
+}
+
 =head3 moduli()
 
 Return the moduli of a number after repeated divisions. The remainders are
@@ -305,7 +339,7 @@ will be consistent.
 
 If you do not provide a tolerance, a default tolerance of 1.49012e-8
 (approximately the square root of an Intel Pentium's
-L<machine epsilon|http://en.wikipedia.org/wiki/Machine_epsilon>)
+L<machine epsilon|https://en.wikipedia.org/wiki/Machine_epsilon>)
 will be used.
 
 =head3 generate_fltcmp()
@@ -443,6 +477,10 @@ Returns p(x), p'(x), and p"(x) of the polynomial for an
 x-value, using Horner's method. Note that unlike C<pl_evaluate()>
 above, the function can only use one x-value.
 
+If the polynomial is a linear equation, the second derivative value
+will be zero.  Similarly, if the polynomial is a simple constant,
+the first derivative value will be zero.
+
 =cut
 
 sub pl_dxevaluate
@@ -460,7 +498,6 @@ sub pl_dxevaluate
 	#
 	if ($n == 1)
 	{
-		$d1val = $val;
 		$val = $val * $x + $coefficients[0];
 	}
 	elsif ($n >= 2)
@@ -516,7 +553,8 @@ sub pl_add
 
     $polyn_ref = pl_sub(\@m, \@n);
 
-Subtract the second list of numbers from the first as though they were polynomial coefficients.
+Subtract the second list of numbers from the first as though they
+were polynomial coefficients.
 
 =cut
 
@@ -554,7 +592,22 @@ the returned values. For example,
 
 After division you will have returned C<(3)> as the quotient,
 and C<(1, 3, 0)> as the remainder. In general, you will want to remove
-the leading zero in the remainder.
+the leading zero, or for that matter values within epsilon of zero, in
+the remainder.
+
+    my($q_ref, $r_ref) = pl_div($f1, $f2);
+
+    #
+    # Remove any leading zeros in the remainder.
+    #
+    my @remd = @{$r_ref};
+    pop @remd while (@remd and abs($remd[$#remd]) < $epsilon);
+
+    $f1 = $f2;
+    $f2 = [@remd];
+
+If C<$f1> and C<$f2> were to go through that bit of code again, not
+removing the leading zeros would lead to a divide-by-zero error.
 
 =cut
 

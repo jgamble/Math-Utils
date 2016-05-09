@@ -7,7 +7,7 @@ my $build = Module::Build->new(
 
 	dist_abstract => 'Useful mathematical functions not in Perl',
 	dist_author => ['John M. Gamble <jgamble@cpan.org>'],
-	dist_version => '1.08',
+	dist_version => '1.09',
 	dist_name => 'Math-Utils',
 
 	requires => {
@@ -33,6 +33,11 @@ my $build = Module::Build->new(
 				sign logarithm comparison polymonial) ],
 		resources => {
 			repository => 'git://github.com/jgamble/Math-Utils.git',
+#			repository => {
+#				url => 'git://github.com/jgamble/Math-Utils',
+#				web => 'https://github.com/jgamble/Math-Utils',
+#				type => 'git',
+#			},
 		},
 	},
 
