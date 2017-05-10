@@ -449,8 +449,11 @@ sub pl_evaluate
 	#
 	# It could happen. Someone might type \$x instead of $x.
 	#
-	@xvalues = (ref $xval_ref eq "ARRAY")? @$xval_ref:
-		(((ref $xval_ref eq "SCALAR")? $$xval_ref: $xval_ref));
+	#@xvalues = (ref $xval_ref eq "ARRAY")? @$xval_ref:
+	#	(((ref $xval_ref eq "SCALAR")? $$xval_ref: $xval_ref));
+
+	@xvalues = map{(ref $_ eq "ARRAY")? @$_:
+			((ref $_ eq "SCALAR")? $$_: $_)} @_[1 .. $#_];
 
 	#
 	# Move the leading coefficient off the polynomial list
