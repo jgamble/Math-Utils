@@ -423,7 +423,7 @@ and the functions that return coefficients all return references to a coefficien
 B<It is assumed that any leading zeros in the coefficient lists have
 already been removed before calling these functions, and that any leading
 zeros found in the returned lists will be handled by the caller.> This caveat
-is particulary important to note in the case of C<pl_div()>.
+is particularly important to note in the case of C<pl_div()>.
 
 Although these functions are convenient for simple polynomial operations,
 for more advanced polynonial operations L<Math::Polynomial> is recommended.

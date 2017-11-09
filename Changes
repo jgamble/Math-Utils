@@ -1,5 +1,10 @@
 Revision history for Math-Utils
 
+1.12
+	11 Nov 2017
+	- Typo found by Florian Schlichting fixed.
+	- New example scripts (a couple transferred over from
+	  Math::Polynomial::Solve) in the new eg/ directory.
 1.11
 	11 Aug 2017
 	- Stupidly depended on Module::Start's boilerplate text for the
