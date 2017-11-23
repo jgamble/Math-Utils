@@ -104,8 +104,7 @@ sub make_poly
 	my(@coefs) = grep($_ != 0, @{$p});
 	if (scalar @coefs)
 	{
-		my $d = gcd(@coefs);
-		$d = gcd($d, $m);
+		my $d = gcd(@coefs, $m);
 		$p = [map($_/$d, @{$p})];
 		$m /= $d;
 	}
