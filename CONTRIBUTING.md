@@ -1,14 +1,17 @@
 # HOW TO REQUEST CHANGES, FIXES, OR NEW FEATURES
 
 The CPAN author does not lack for sites that offer ways to support
-their modules.
+their modules. If you have found a bug or need an improvement, please
+make the request at one of these two sites:
 
-RT, CPAN's request tracker, is the oldest and most established:
-(RT for Math-Utils)[http://rt.cpan.org/NoAuth/Bugs.html?Dist=Math-Utils]
+RT, CPAN's request tracker, is the oldest and most established. It
+is probably best for reporting true bugs.
 
-If the author and their module are on github, the link to the module
-will be found on MetaCPAN in the leftmost column of the module's site.
-Usually there will be an option on github to create an issue.
-(Github link for Math-Utils)[]
+[RT for Math-Utils](http://rt.cpan.org/NoAuth/Bugs.html?Dist=Math-Utils)
+
+This module is developed with github, and issues may be presented and
+discussed there.
+
+[Github link for Math-Utils](https://github.com/jgamble/Math-Utils)
 
 
